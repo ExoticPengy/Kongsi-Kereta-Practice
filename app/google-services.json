@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584030702323",
+    "project_id": "kongsi-kereta-practice",
+    "storage_bucket": "kongsi-kereta-practice.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584030702323:android:6021c4ed39a2ed8fcec586",
+        "android_client_info": {
+          "package_name": "com.example.kongsikeretapractice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQF8Ep9HTanRTEKEsDqAgyQTtl_3oUuZs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
