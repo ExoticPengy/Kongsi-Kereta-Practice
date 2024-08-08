@@ -42,10 +42,8 @@ class RideViewModel: ViewModel() {
     var newRideId by mutableIntStateOf(0)
     var currentEdit by mutableIntStateOf(-1)
     var newRideDetails by mutableStateOf(RideDetails())
-
-    init {
-        getRides()
-    }
+    var datePicker by mutableStateOf(false)
+    var timePicker by mutableStateOf(false)
 
     fun updateUiState(rides: List<RideDetails> = listOf()) {
         _uiState.value = RideUiState(

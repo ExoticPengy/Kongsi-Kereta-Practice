@@ -16,10 +16,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.twotone.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -53,7 +56,13 @@ fun Driver(
     val rides: List<RideViewModel.RideDetails> = uiState.rides
 
     LaunchedEffect(authState) {
-        if (authState.authState == "Unauthenticated") {
+        if (authState.authState == "Authenticated") {
+            if (rideViewModel.userIc == "") {
+                rideViewModel.userIc = authViewModel.userIc
+            }
+            rideViewModel.getRides()
+        }
+        else if (authState.authState == "Unauthenticated") {
             backLogin()
         }
     }
@@ -78,11 +87,11 @@ fun Driver(
                 ) {
                     IconButton(
                         onClick = { authViewModel.logOut() },
-                        colors = IconButtonDefaults.iconButtonColors(Color.Black),
+                        colors = IconButtonDefaults.iconButtonColors(Color.Red),
                         modifier = Modifier
                             .background(
-                                Color.Black,
-                                shape = RoundedCornerShape(50)
+                                Color.Red,
+                                shape = RoundedCornerShape(20)
                             )
                     ) {
                         Icon(
@@ -117,8 +126,12 @@ fun Driver(
                 )
             }
 
-            LazyColumn() {
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.height(500.dp)
+            ) {
                 items(rides) { ride ->
+                    Spacer(Modifier.height(25.dp))
                     Card() {
                         Column() {
                             var date by remember { mutableStateOf(ride.date) }
@@ -127,24 +140,68 @@ fun Driver(
                             var origin by remember { mutableStateOf(ride.origin) }
                             var fare by remember { mutableStateOf(ride.fare) }
 
-                            OutlinedTextField(
-                                value = date,
-                                onValueChange = {
-                                    date = it
-                                    rideViewModel.newRideDetails.date = it
-                                },
-                                label = { Text("Date") },
-                                enabled = rideViewModel.currentEdit == ride.rideId
-                            )
-                            OutlinedTextField(
-                                value = time,
-                                onValueChange = {
-                                    time = it
-                                    rideViewModel.newRideDetails.time = it
-                                },
-                                label = { Text("Time") },
-                                enabled = rideViewModel.currentEdit == ride.rideId
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                OutlinedTextField(
+                                    value = date,
+                                    onValueChange = {
+                                        date = it
+                                        rideViewModel.newRideDetails.date = it
+                                    },
+                                    label = { Text("Date") },
+                                    enabled = false
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                if (rideViewModel.currentEdit == ride.rideId) {
+                                    IconButton(
+                                        onClick = { rideViewModel.datePicker = true },
+                                    ) {
+                                        Icon(Icons.Default.DateRange, contentDescription = null)
+                                    }
+                                }
+                                if (rideViewModel.datePicker && rideViewModel.currentEdit == ride.rideId) {
+                                    DatePickerModal(
+                                        onDateSelected = {
+                                            date = formatDate(it ?: 0)
+                                            rideViewModel.newRideDetails.date = formatDate(it ?: 0)
+                                                         },
+                                        onDismiss = { rideViewModel.datePicker = false }
+                                    )
+                                }
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                OutlinedTextField(
+                                    value = time,
+                                    onValueChange = {
+                                        time = it
+                                        rideViewModel.newRideDetails.time = it
+                                    },
+                                    label = { Text("Time") },
+                                    enabled = false
+                                )
+                                Spacer(Modifier.width(3.dp))
+                                if (rideViewModel.currentEdit == ride.rideId) {
+                                    IconButton(
+                                        onClick = { rideViewModel.timePicker = true },
+                                    ) {
+                                        Icon(Icons.Default.Create, contentDescription = null)
+                                    }
+                                }
+                                if (rideViewModel.timePicker && rideViewModel.currentEdit == ride.rideId) {
+                                    TimeDial(
+                                        onConfirm = {
+                                            time = it
+                                            rideViewModel.newRideDetails.time = it
+                                        },
+                                        onDismiss = { rideViewModel.timePicker = false }
+                                    )
+                                }
+                            }
                             OutlinedTextField(
                                 value = destination,
                                 onValueChange = {
@@ -163,49 +220,63 @@ fun Driver(
                                 label = { Text("Origin") },
                                 enabled = rideViewModel.currentEdit == ride.rideId
                             )
-                            OutlinedTextField(
-                                value = toRm(fare),
-                                onValueChange = {
-                                    fare = toAmount(it)
-                                    rideViewModel.newRideDetails.fare = toAmount(it)
-                                },
-                                label = { Text("Fare") },
-                                enabled = rideViewModel.currentEdit == ride.rideId
-                            )
-                            IconButton(
-                                onClick = {
-                                    if (rideViewModel.currentEdit == -1) {
-                                        rideViewModel.currentEdit = ride.rideId
-                                    }
-                                    else {
-                                        rideViewModel.currentEdit = -1
-                                        rideViewModel.newRideDetails.driverIc = rideViewModel.userIc
-                                        rideViewModel.newRideDetails.rideId = ride.rideId
-                                        rideViewModel.updateRide()
-                                    }
-
-                                    if (rideViewModel.userIc == "") {
-                                        rideViewModel.userIc = authViewModel.userIc
-                                    }
-                                },
-                                colors = IconButtonDefaults.iconButtonColors(Color.Black),
-                                modifier = Modifier
-                                    .background(
-                                        Color.Black,
-                                        shape = RoundedCornerShape(50)
-                                    )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Icon(
-                                    if (rideViewModel.currentEdit == ride.rideId){ Icons.Default.Check }
-                                    else { Icons.Default.Edit },
-                                    contentDescription = null,
-                                    tint = Color.White
+                                OutlinedTextField(
+                                    value = toRm(fare),
+                                    onValueChange = {
+                                        fare = toAmount(it)
+                                        rideViewModel.newRideDetails.fare = toAmount(it)
+                                    },
+                                    label = { Text("Fare") },
+                                    enabled = rideViewModel.currentEdit == ride.rideId
                                 )
+                                Spacer(Modifier.width(10.dp))
+                                IconButton(
+                                    onClick = {
+                                        if (rideViewModel.currentEdit == -1) {
+                                            rideViewModel.newRideDetails = ride
+                                            rideViewModel.currentEdit = ride.rideId
+                                        } else {
+                                            rideViewModel.currentEdit = -1
+                                            rideViewModel.newRideDetails.driverIc =
+                                                rideViewModel.userIc
+                                            rideViewModel.newRideDetails.rideId = ride.rideId
+                                            rideViewModel.updateRide()
+                                        }
+
+                                        if (rideViewModel.userIc == "") {
+                                            rideViewModel.userIc = authViewModel.userIc
+                                        }
+                                    },
+                                    colors = IconButtonDefaults.iconButtonColors(Color.Black),
+                                    modifier = Modifier
+                                        .background(
+                                            Color.Black,
+                                            shape = RoundedCornerShape(50)
+                                        )
+                                        .size(35.dp)
+                                ) {
+                                    Icon(
+                                        if (rideViewModel.currentEdit == ride.rideId) {
+                                            Icons.Default.Check
+                                        } else {
+                                            Icons.Default.Edit
+                                        },
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
+                                Spacer(Modifier.width(10.dp))
                             }
                         }
                     }
+                    Spacer(Modifier.height(25.dp))
                 }
             }
+
+            Spacer(Modifier.height(25.dp))
 
             Row(
                 horizontalArrangement = Arrangement.Center,
