@@ -30,6 +30,7 @@ class RideViewModel: ViewModel() {
         var destination: String = "",
         var fare: Double = 0.0,
         var driverIc: String = "",
+        var passengers: Int = 0
     )
 
     private val _uiState = MutableStateFlow(RideUiState())

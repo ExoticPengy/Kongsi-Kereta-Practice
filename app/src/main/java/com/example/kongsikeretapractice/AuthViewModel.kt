@@ -1,7 +1,5 @@
 package com.example.kongsikeretapractice
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,6 +25,7 @@ class AuthViewModel: ViewModel() {
     private val auth = Firebase.auth
 
     var userIc by mutableStateOf("")
+    var uid by mutableStateOf("")
 
     init {
         checkAuth()
@@ -39,6 +38,7 @@ class AuthViewModel: ViewModel() {
     private fun checkAuth() {
        if (auth.currentUser != null) {
            getUserIc(auth.currentUser!!.email ?: "")
+           uid = getUserId()
            updateAuthState(authState = "Authenticated")
        }
        else {
@@ -62,6 +62,7 @@ class AuthViewModel: ViewModel() {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 userIc = ic
+                uid = getUserId()
                 updateAuthState(authState = "Authenticated")
             }
             else {
@@ -86,6 +87,7 @@ class AuthViewModel: ViewModel() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener() { task ->
                 if (task.isSuccessful) {
+                    uid = getUserId()
                     updateAuthState("Success")
                     auth.signOut()
                 } else {
@@ -101,6 +103,10 @@ class AuthViewModel: ViewModel() {
         auth.signOut()
         userIc = ""
         updateAuthState("Unauthenticated")
+    }
+
+    fun getUserId(): String {
+        return auth.currentUser?.uid?:""
     }
 
     private fun getUserIc(email: String = "") {

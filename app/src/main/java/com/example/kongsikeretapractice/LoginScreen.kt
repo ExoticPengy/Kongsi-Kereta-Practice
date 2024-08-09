@@ -74,36 +74,6 @@ fun Login(
                 contentDescription = null,
                 modifier = Modifier.size(150.dp)
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.width(300.dp)
-            ) {
-                Button(
-                    onClick = { /*TODO*/ },
-                    colors = ButtonDefaults.buttonColors(Color.Transparent),
-                    modifier = Modifier
-                        .border(1.dp, Color.Black)
-                ) {
-                    Text(
-                        text = "Driver login",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Button(
-                    onClick = { /*TODO*/ },
-                    colors = ButtonDefaults.buttonColors(Color.Transparent),
-                    modifier = Modifier
-                        .border(1.dp, Color.Black)
-                ) {
-                    Text(
-                        text = "Rider login",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
 
 
             OutlinedTextField(

@@ -25,10 +25,29 @@ import kotlin.math.absoluteValue
 
 class RegisterViewModel: ViewModel() {
     data class RegisterUiState(
-        val driverInfo: DriverInfo = DriverInfo(),
+        val userInfo: UserInfo = UserInfo(),
+        val vehicleInfo: VehicleInfo = VehicleInfo()
+    )
+
+    data class UserInfo(
+        var uid: String = "",
+        var name: String = "",
+        var ic: String = "",
+        var gender: String = "",
+        var phone: String = "",
+        var email: String = "",
+        var address: String = "",
+        var imageUrl: String = "",
+    )
+
+    data class VehicleInfo(
+        var model: String = "",
+        var capacity: String = "",
+        var special: String = ""
     )
 
     data class DriverInfo(
+        var uid: String = "",
         var name: String = "",
         var ic: String = "",
         var gender: String = "",
@@ -47,24 +66,24 @@ class RegisterViewModel: ViewModel() {
 
     val db = Firebase.firestore
 
+    var registerAsDriver by mutableStateOf(true)
+
     var selectedImageUri by mutableStateOf<Uri?>(null)
     var password by mutableStateOf("")
-    var confirmPassword by mutableStateOf("")
-    var passwordView by mutableStateOf(false)
 
     val darkColor: String = "#658fc4"
 
-    var currentProgress by mutableFloatStateOf(0f)
     var box1 by mutableStateOf(toColor(darkColor))
     var box2 by mutableStateOf(Color.LightGray)
     var box3 by mutableStateOf(Color.LightGray)
     var step by mutableIntStateOf(1)
-    var back by mutableStateOf(false)
     var buttonEnabled by mutableStateOf(true)
+    var back by mutableStateOf(true)
 
-    fun updateUiState(DriverInfo: DriverInfo) {
+    fun updateUiState(userInfo: UserInfo, vehicleInfo: VehicleInfo = VehicleInfo()) {
         _uiState.value = RegisterUiState(
-            DriverInfo
+            userInfo,
+            vehicleInfo
         )
     }
 
@@ -76,34 +95,28 @@ class RegisterViewModel: ViewModel() {
         }
     }
 
-    suspend fun barAnimation(start: Int, end: Int, box: Int) {
+    fun changeStep(newStep: Int) {
+        back = step >= newStep
+
+        step = newStep
+
         buttonEnabled = false
-        if (start < 0) {
-            when (box) {
-                2 -> {
-                    box2 = changeProgressColor(false)
-                }
 
-                else -> {
-                    box3 = changeProgressColor(false)
-                }
+        when (step) {
+            1 -> {
+                box2 = changeProgressColor(false)
+                box3 = changeProgressColor(false)
+            }
+            2 -> {
+                box2 = changeProgressColor(true)
+                box3 = changeProgressColor(false)
+            }
+            3 -> {
+                box2 = changeProgressColor(true)
+                box3 = changeProgressColor(true)
             }
         }
-        for (i in start..end) {
-            currentProgress = (i.toFloat().absoluteValue / 100)
-            delay(1)
-        }
-        if (start >= 0) {
-            when (box) {
-                2 -> {
-                    box2 = changeProgressColor(true)
-                }
 
-                else -> {
-                    box3 = changeProgressColor(true)
-                }
-            }
-        }
         buttonEnabled = true
     }
 
@@ -113,7 +126,7 @@ class RegisterViewModel: ViewModel() {
         // Upload image to Firebase Storage
         if (selectedImageUri != null) {
             val storageRef = Firebase.storage.reference.child("UserProfiles")
-            val imageRef = storageRef.child("${_uiState.value.driverInfo.ic}.png")
+            val imageRef = storageRef.child("${_uiState.value.userInfo.ic}.png")
 
             // Read image data from Uri
             val inputStream =
@@ -126,21 +139,11 @@ class RegisterViewModel: ViewModel() {
                     .addOnSuccessListener { taskSnapshot ->
                         taskSnapshot.storage.downloadUrl.addOnSuccessListener { uri ->
                             updateUiState(
-                                _uiState.value.driverInfo.copy(imageUrl = uri.toString())
+                                _uiState.value.userInfo.copy(imageUrl = uri.toString()),
+                                _uiState.value.vehicleInfo
                             )
-                            Toast.makeText(
-                                context,
-                                "Image uploaded successfully.",
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
                     }
-            } else {
-                Toast.makeText(
-                    context,
-                    "Failed to upload image.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         } else {
             Toast.makeText(
@@ -151,8 +154,32 @@ class RegisterViewModel: ViewModel() {
         }
     }
 
-    fun saveDriver(driverInfo: DriverInfo) {
+    fun saveDriver() {
+        val userInfo = _uiState.value.userInfo
+        val vehicleInfo = _uiState.value.vehicleInfo
+
+        val driverInfo = DriverInfo(
+            uid = userInfo.uid,
+            name = userInfo.name,
+            ic = userInfo.ic,
+            gender = userInfo.gender,
+            phone = userInfo.phone,
+            email = userInfo.email,
+            address = userInfo.address,
+            imageUrl = userInfo.imageUrl,
+            model = vehicleInfo.model,
+            capacity = vehicleInfo.capacity,
+            special = vehicleInfo.special
+        )
+
         db.collection("drivers")
             .add(driverInfo)
+    }
+
+    fun saveRider() {
+        val userInfo = _uiState.value.userInfo
+
+        db.collection("riders")
+            .add(userInfo)
     }
 }
