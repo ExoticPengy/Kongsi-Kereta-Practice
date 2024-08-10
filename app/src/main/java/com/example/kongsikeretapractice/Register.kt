@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -51,7 +53,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -502,8 +508,18 @@ fun Step1(registerViewModel: RegisterViewModel) {
                     userInfo.copy(email = it),
                     vehicleInfo.copy()
                 )
+                registerViewModel.checkEmail()
             },
-            label = { Text(text = "Email") }
+            label = { Text(text = "Email") },
+            isError = registerViewModel.emailHasErrors,
+            supportingText = {
+                if (registerViewModel.emailHasErrors) {
+                Text("The email format is incorrect!")
+                }
+            },
+            singleLine = true,
+            placeholder = { Text("example@email.com") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
         )
 
         OutlinedTextField(

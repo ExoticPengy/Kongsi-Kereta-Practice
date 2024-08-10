@@ -36,10 +36,10 @@ class AuthViewModel: ViewModel() {
     }
 
     private fun checkAuth() {
+        updateAuthState(authState = "Loading")
        if (auth.currentUser != null) {
            getUserIc(auth.currentUser!!.email ?: "")
            uid = getUserId()
-           updateAuthState(authState = "Authenticated")
        }
        else {
            updateAuthState(authState = "Unauthenticated")
@@ -118,12 +118,14 @@ class AuthViewModel: ViewModel() {
             for (doc in docs) {
                 userIc = doc.toObject<RegisterViewModel.DriverInfo>().ic
             }
+            updateAuthState(authState = "Authenticated")
         }
 
         ridersRef.whereEqualTo("email", email).get().addOnSuccessListener {  docs ->
             for (doc in docs) {
                 userIc = doc.toObject<RegisterViewModel.UserInfo>().ic
             }
+            updateAuthState(authState = "Authenticated")
         }
     }
 }

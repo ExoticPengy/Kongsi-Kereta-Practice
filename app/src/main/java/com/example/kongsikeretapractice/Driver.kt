@@ -16,6 +16,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
@@ -27,10 +30,13 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.twotone.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,12 +65,17 @@ fun Driver(
     val rides: List<RideViewModel.RideDetails> = uiState.rides
 
     LaunchedEffect(authState) {
-        if (authState.authState == "Authenticated") {
-            rideViewModel.userIc = authViewModel.userIc
-            rideViewModel.getRides()
-        }
-        else if (authState.authState == "Unauthenticated") {
-            backLogin()
+        when (authState.authState) {
+            "Authenticated" -> {
+                rideViewModel.userIc = authViewModel.userIc
+                rideViewModel.getRides()
+            }
+            "Loading" -> {
+                rideViewModel.loading = true
+            }
+            "Unauthenticated" -> {
+                backLogin()
+            }
         }
     }
 
@@ -75,6 +86,10 @@ fun Driver(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
+            if (rideViewModel.loading) {
+                LoadingDialog()
+            }
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween,
@@ -306,34 +321,19 @@ fun Driver(
 
             Spacer(Modifier.height(25.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(50.dp)
-                    .background(
-                        Color.Black,
-                        shape = RoundedCornerShape(50)
-                    )
-                    .clickable(enabled = (rideViewModel.currentEdit == -1)) {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    if ((rideViewModel.currentEdit == -1)) {
                         if (rideViewModel.userIc == "") {
                             rideViewModel.userIc = authViewModel.userIc
                         }
                         rideViewModel.newRide()
                     }
+                }
             ) {
-                Icon(
-                    Icons.Outlined.Add,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(25.dp)
-                )
-                Text(
-                    text = "Add new ride",
-                    color = Color.White
-                )
+                Icon(imageVector = Icons.Filled.AddCircle, contentDescription = null, tint = Color.Black)
+                Spacer(Modifier.size(5.dp))
+                Text("Create new ride")
             }
         }
     }

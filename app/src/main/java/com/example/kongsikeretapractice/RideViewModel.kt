@@ -59,6 +59,7 @@ class RideViewModel: ViewModel() {
     var newRideDetails by mutableStateOf(RideDetails())
     var datePicker by mutableStateOf(false)
     var timePicker by mutableStateOf(false)
+    var loading by mutableStateOf(false)
 
     init {
         driversRef.get()
@@ -85,6 +86,7 @@ class RideViewModel: ViewModel() {
     }
 
     fun getRides() {
+        loading = true
         ridesRef
             .orderBy("rideId", Query.Direction.ASCENDING)
             .get()
@@ -99,6 +101,7 @@ class RideViewModel: ViewModel() {
                     }
                 }
                 updateUiState(rides = rideList)
+                loading = false
             }
     }
 
@@ -113,6 +116,7 @@ class RideViewModel: ViewModel() {
     }
 
     fun getAllRides() {
+        loading = true
         ridesRef
             .get()
             .addOnSuccessListener {  docs ->
@@ -121,6 +125,7 @@ class RideViewModel: ViewModel() {
                     rideList.add(doc.toObject())
                 }
                 updateUiState(rides = rideList)
+                loading = false
             }
     }
 

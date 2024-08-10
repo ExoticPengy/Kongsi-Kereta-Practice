@@ -51,6 +51,7 @@ fun Login(
     LaunchedEffect(authState) {
         when (authState.authState) {
             "Authenticated" -> {
+                loginViewModel.loading = false
                 Toast.makeText(context, "Successfully Authenticated!", Toast.LENGTH_SHORT).show()
                 if (loginViewModel.isDriver) {
                     loginDriver()
@@ -59,10 +60,15 @@ fun Login(
                     loginRider()
                 }
             }
+            "Loading" -> {
+                loginViewModel.loading = true
+            }
             "Unsuccessful" -> {
+                loginViewModel.loading = false
                 Toast.makeText(context, authState.error, Toast.LENGTH_SHORT).show()
             }
             "Empty" -> {
+                loginViewModel.loading = false
                 Toast.makeText(context, authState.error, Toast.LENGTH_SHORT).show()
                 authViewModel.updateAuthState("")
             }
@@ -77,6 +83,10 @@ fun Login(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize()
         ) {
+            if (loginViewModel.loading) {
+                LoadingDialog()
+            }
+
             Text(
                 text = "Kongsi Kereta App",
                 fontSize = 30.sp,

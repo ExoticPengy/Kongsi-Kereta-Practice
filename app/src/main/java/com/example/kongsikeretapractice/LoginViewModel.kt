@@ -25,8 +25,9 @@ class LoginViewModel: ViewModel() {
     var ic by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
-    var isDriver by mutableStateOf(false)
+    var isDriver by mutableStateOf(true)
     var showPassword by mutableStateOf(false)
+    var loading by mutableStateOf(false)
 
     init {
         driversRef.get().addOnSuccessListener { documents ->

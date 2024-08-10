@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -182,4 +183,15 @@ class RegisterViewModel: ViewModel() {
         db.collection("riders")
             .add(userInfo)
     }
+
+    //Validation
+    var emailHasErrors by mutableStateOf(false)
+
+    fun checkEmail() {
+        emailHasErrors = if (uiState.value.userInfo.email.isNotEmpty()) {
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(uiState.value.userInfo.email).matches()
+        }
+        else false
+    }
+
 }
