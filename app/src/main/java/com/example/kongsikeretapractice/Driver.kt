@@ -15,9 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
@@ -49,7 +51,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun Driver(
     authViewModel: AuthViewModel,
     rideViewModel: RideViewModel = viewModel(),
-    backLogin: () -> Unit
+    backLogin: () -> Unit,
+    profileClick: () -> Unit
 ) {
     val authState by authViewModel.authState.collectAsState()
     val uiState by rideViewModel.uiState.collectAsState()
@@ -57,9 +60,7 @@ fun Driver(
 
     LaunchedEffect(authState) {
         if (authState.authState == "Authenticated") {
-            if (rideViewModel.userIc == "") {
-                rideViewModel.userIc = authViewModel.userIc
-            }
+            rideViewModel.userIc = authViewModel.userIc
             rideViewModel.getRides()
         }
         else if (authState.authState == "Unauthenticated") {
@@ -104,7 +105,7 @@ fun Driver(
                     Text("Kongsi Kereta Ride")
 
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = { profileClick() },
                         colors = IconButtonDefaults.iconButtonColors(Color.Black),
                         modifier = Modifier
                             .background(
@@ -189,7 +190,7 @@ fun Driver(
                                     IconButton(
                                         onClick = { rideViewModel.timePicker = true },
                                     ) {
-                                        Icon(Icons.Default.Create, contentDescription = null)
+                                        Icon(Icons.Default.AccessTime, contentDescription = null)
                                     }
                                 }
                                 if (rideViewModel.timePicker && rideViewModel.currentEdit == ride.rideId) {
@@ -211,15 +212,42 @@ fun Driver(
                                 label = { Text("Destination") },
                                 enabled = rideViewModel.currentEdit == ride.rideId
                             )
-                            OutlinedTextField(
-                                value = origin,
-                                onValueChange = {
-                                    origin = it
-                                    rideViewModel.newRideDetails.origin = it
-                                },
-                                label = { Text("Origin") },
-                                enabled = rideViewModel.currentEdit == ride.rideId
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                OutlinedTextField(
+                                    value = origin,
+                                    onValueChange = {
+                                        origin = it
+                                        rideViewModel.newRideDetails.origin = it
+                                    },
+                                    label = { Text("Origin") },
+                                    enabled = rideViewModel.currentEdit == ride.rideId
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                if (rideViewModel.currentEdit == ride.rideId) {
+                                    IconButton(
+                                        onClick = {
+                                            rideViewModel.deleteRide()
+                                            rideViewModel.currentEdit = -1
+                                        },
+                                        colors = IconButtonDefaults.iconButtonColors(Color.Red),
+                                        modifier = Modifier
+                                            .background(
+                                                Color.Black,
+                                                shape = RoundedCornerShape(50)
+                                            )
+                                            .size(35.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.width(10.dp))
+                            }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -288,7 +316,7 @@ fun Driver(
                         Color.Black,
                         shape = RoundedCornerShape(50)
                     )
-                    .clickable {
+                    .clickable(enabled = (rideViewModel.currentEdit == -1)) {
                         if (rideViewModel.userIc == "") {
                             rideViewModel.userIc = authViewModel.userIc
                         }
@@ -301,7 +329,6 @@ fun Driver(
                     tint = Color.White,
                     modifier = Modifier
                         .size(25.dp)
-                        .clickable { }
                 )
                 Text(
                     text = "Add new ride",

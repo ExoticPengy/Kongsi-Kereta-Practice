@@ -18,25 +18,47 @@ class LoginViewModel: ViewModel() {
 
     private val db = Firebase.firestore
     private val driversRef = db.collection("drivers")
-    private val users = mutableListOf<RegisterViewModel.DriverInfo>()
+    private val drivers = mutableListOf<RegisterViewModel.DriverInfo>()
+    private val ridersRef = db.collection("riders")
+    private val riders = mutableListOf<RegisterViewModel.UserInfo>()
 
     var ic by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
+    var isDriver by mutableStateOf(false)
+    var showPassword by mutableStateOf(false)
 
     init {
         driversRef.get().addOnSuccessListener { documents ->
             for (document in documents) {
-                users.add(document.toObject<RegisterViewModel.DriverInfo>())
+                drivers.add(document.toObject())
+            }
+        }
+        ridersRef.get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                riders.add(document.toObject())
             }
         }
     }
 
     fun getCredentials() {
-        for (user in users) {
+        for (user in drivers) {
             if (user.ic == ic) {
                 email = user.email
+                isDriver = true
             }
         }
+        for (user in riders) {
+            if (user.ic == ic) {
+                email = user.email
+                isDriver = false
+            }
+        }
+    }
+
+    fun reset() {
+        ic = ""
+        email = ""
+        password = ""
     }
 }

@@ -3,6 +3,7 @@ package com.example.kongsikeretapractice
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -27,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,7 +42,8 @@ fun Login(
     authViewModel: AuthViewModel,
     loginViewModel: LoginViewModel = viewModel(),
     goRegister: () -> Unit,
-    loginDriver: () -> Unit
+    loginDriver: () -> Unit,
+    loginRider: () -> Unit
 ) {
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
@@ -45,13 +52,19 @@ fun Login(
         when (authState.authState) {
             "Authenticated" -> {
                 Toast.makeText(context, "Successfully Authenticated!", Toast.LENGTH_SHORT).show()
-                loginDriver()
+                if (loginViewModel.isDriver) {
+                    loginDriver()
+                }
+                else {
+                    loginRider()
+                }
             }
             "Unsuccessful" -> {
                 Toast.makeText(context, authState.error, Toast.LENGTH_SHORT).show()
             }
             "Empty" -> {
                 Toast.makeText(context, authState.error, Toast.LENGTH_SHORT).show()
+                authViewModel.updateAuthState("")
             }
         }
     }
@@ -79,21 +92,31 @@ fun Login(
             OutlinedTextField(
                 value = loginViewModel.ic,
                 onValueChange = { loginViewModel.ic = it },
-                label = { Text("IC") }
+                label = { Text("IC no.") }
             )
 
             OutlinedTextField(
                 value = loginViewModel.password,
                 onValueChange = { loginViewModel.password = it },
-                label = { Text("Password") }
+                label = { Text("Password") },
+                visualTransformation = if (loginViewModel.showPassword) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                trailingIcon = { Icon(
+                    if (loginViewModel.showPassword) Icons.Default.Visibility
+                    else Icons.Default.VisibilityOff,
+                    null,
+                    modifier = Modifier.clickable { loginViewModel.showPassword = !loginViewModel.showPassword }
+                ) }
             )
 
             Button(
                 onClick = {
                     loginViewModel.getCredentials()
                     authViewModel.logIn(loginViewModel.ic, loginViewModel.email, loginViewModel.password)
+                    loginViewModel.reset()
                           },
                 colors = ButtonDefaults.buttonColors(toColor("#658fc4")),
+                enabled = (authState.authState != "Loading")
             ) {
                 Text("Log In")
             }

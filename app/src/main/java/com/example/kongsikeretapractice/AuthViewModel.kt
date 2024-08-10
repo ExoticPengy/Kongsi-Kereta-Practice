@@ -31,7 +31,7 @@ class AuthViewModel: ViewModel() {
         checkAuth()
     }
 
-    private fun updateAuthState(authState: String, error: String = "") {
+    fun updateAuthState(authState: String, error: String = "") {
         _authState.value = AuthState(authState, error)
     }
 
@@ -52,7 +52,7 @@ class AuthViewModel: ViewModel() {
         if (ic.isEmpty() || email.isEmpty() || password.isEmpty()) {
             updateAuthState(
                 authState = "Empty",
-                error = "IC and password can't be empty!"
+                error = "Incorrect Ic or Password!"
             )
             return
         }
@@ -112,10 +112,17 @@ class AuthViewModel: ViewModel() {
     private fun getUserIc(email: String = "") {
         val db = Firebase.firestore
         val driverRef = db.collection("drivers")
+        val ridersRef = db.collection("riders")
 
         driverRef.whereEqualTo("email", email).get().addOnSuccessListener {  docs ->
             for (doc in docs) {
                 userIc = doc.toObject<RegisterViewModel.DriverInfo>().ic
+            }
+        }
+
+        ridersRef.whereEqualTo("email", email).get().addOnSuccessListener {  docs ->
+            for (doc in docs) {
+                userIc = doc.toObject<RegisterViewModel.UserInfo>().ic
             }
         }
     }
